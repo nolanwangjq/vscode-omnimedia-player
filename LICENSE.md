@@ -1,6 +1,9 @@
+Portions of this software are copyright (c) 2025 BatchNepal Pvt. Ltd.
+Original project: https://github.com/ChetSocio/vscode-video-preview
+
 # MIT License
 
-Copyright (c) 2025 BatchNepal Pvt. Ltd.
+Copyright (c) 2026 Nolan Wang
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

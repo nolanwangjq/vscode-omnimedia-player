@@ -1,0 +1,7 @@
+tests/*
+REVIEW.md
+src/*
+scripts/*
+tsconfig.json
+.vscode/
+.md

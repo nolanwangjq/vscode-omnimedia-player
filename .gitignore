@@ -1,3 +1,6 @@
 out/
+videos/*
 *.vsix
 node_modules/
+REVIEW.md
+tests/*

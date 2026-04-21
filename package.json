@@ -1,22 +1,17 @@
 {
-  "name": "vscode-video-preview",
-  "displayName": "Video Preview (Player) - BNPL",
+  "name": "video-preview-all-in-one",
+  "displayName": "Video Preview All-in-one",
   "description": "Play MP4, WebM, MOV, MKV, and AVI videos directly inside VS Code with full audio support, no file size limits, playback speed control, and Picture-in-Picture.",
   "version": "0.2.0",
-  "publisher": "BatchNepal",
-  "author": {
-    "name": "BatchNepal Consultancy Pvt. Ltd.",
-    "email": "support@batchnepal.com",
-    "url": "https://batchnepal.com"
-  },
+  "publisher": "Nolan Wang",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ChetSocio/vscode-video-preview"
+    "url": "https://github.com/nolanwangjq/vscode-video-preview-pro"
   },
   "icon": "images/logo.png",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ChetSocio/vscode-video-preview/issues"
+    "url": "https://github.com/nolanwangjq/vscode-video-preview-pro/issues"
   },
   "homepage": "https://batchnepal.com",
   "keywords": [

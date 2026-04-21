@@ -1,13 +1,8 @@
 import * as vscode from 'vscode';
 import { VideoEditorProvider } from './VideoEditorProvider';
-import { LocalFileServer } from './LocalFileServer';
 
 export async function activate(context: vscode.ExtensionContext) {
-  const server = new LocalFileServer();
-  await server.start();
-  context.subscriptions.push({ dispose: () => server.stop() });
-
-  const provider = new VideoEditorProvider(context, server);
+  const provider = new VideoEditorProvider(context);
 
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(

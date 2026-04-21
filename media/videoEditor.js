@@ -375,32 +375,43 @@
   window.addEventListener("message", (event) => {
     const msg = event.data;
 
+    if (msg.type === "transcode_progress") {
+      const bar = document.getElementById("transcodeBar");
+      const label = document.getElementById("transcodeLabel");
+      const fill = document.getElementById("transcodeFill");
+      if (label) label.textContent = `Transcoding video for playback... ${msg.percent}%`;
+      if (fill) fill.style.width = `${msg.percent}%`;
+      if (msg.percent >= 100 && bar) {
+        if (bar.dataset.willExtractAudio === "true") {
+          // Transition to audio extraction phase
+          bar.innerHTML =
+            '<div class="transcode-spinner"></div><span>Extracting audio for playback...</span>';
+        } else {
+          bar.classList.add("done");
+          setTimeout(() => bar.remove(), 400);
+        }
+      }
+    }
+
     if (msg.type === "video_src") {
       // Guard — only load once, ignore duplicate messages
       if (videoLoaded) return;
       videoLoaded = true;
 
-      fetch(msg.src)
-        .then((r) => r.blob())
-        .then((blob) => {
-          video.src = URL.createObjectURL(blob);
-          video.muted = true;
-          video.load();
-          video.addEventListener(
-            "loadeddata",
-            () => {
-              video.classList.remove("loading");
-              document.getElementById("videoSpinner")?.remove();
-            },
-            { once: true },
-          );
-        })
-        .catch(() =>
-          vscode.postMessage({
-            type: "error",
-            message: "Failed to load video.",
-          }),
-        );
+      // Set src directly — CSP media-src allows http://127.0.0.1:PORT, and
+      // the HTTP server supports Range requests so seeking works without
+      // pre-downloading the full file.
+      video.src = msg.src;
+      video.muted = true;
+      video.load();
+      video.addEventListener(
+        "loadeddata",
+        () => {
+          video.classList.remove("loading");
+          document.getElementById("videoSpinner")?.remove();
+        },
+        { once: true },
+      );
     }
 
     if (msg.type === "audio_ready") {
