@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **Video Preview All-in-one** are documented here.
+All notable changes to **Omnimedia Player** are documented here.
 
 ---
 

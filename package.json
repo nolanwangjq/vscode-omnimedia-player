@@ -1,27 +1,30 @@
 {
-  "name": "video-preview-all-in-one",
-  "displayName": "Video Preview All-in-one",
+  "name": "omnimedia-player",
+  "displayName": "Omnimedia Player",
   "description": "Play MP4, WebM, MOV, MKV, and AVI videos directly inside VS Code with full audio support, no file size limits, playback speed control, and Picture-in-Picture.",
   "version": "0.3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nolanwangjq/vscode-video-preview-pro"
+    "url": "https://github.com/nolanwangjq/vscode-omnimedia-player"
   },
   "publisher": "nolanwang",
   "icon": "images/logo.png",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nolanwangjq/vscode-video-preview-pro/issues"
+    "url": "https://github.com/nolanwangjq/vscode-omnimedia-player/issues"
   },
   "homepage": "https://batchnepal.com",
   "keywords": [
-    "vscode",
     "video",
     "preview",
     "player",
-    "batchnepal",
+    "media",
     "video player",
-    "video preview"
+    "video preview",
+    "Codec",
+    "mp4",
+    "mkv",
+    "webm"
   ],
   "engines": {
     "vscode": "^1.90.0"
@@ -40,7 +43,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Video Preview",
+      "title": "Omnimedia Player",
       "properties": {
         "videoPreview.externalPlayerPath": {
           "type": "string",
@@ -53,13 +56,13 @@
     "commands": [
       {
         "command": "videoPreview.open",
-        "title": "Open with Video Preview"
+        "title": "Open with Omnimedia Player"
       }
     ],
     "customEditors": [
   {
     "viewType": "videoPreview.viewer",
-    "displayName": "Video Preview",
+    "displayName": "Omnimedia Player",
     "priority": "default",
     "readonly": true,
     "selector": [

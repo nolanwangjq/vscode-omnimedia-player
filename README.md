@@ -1,4 +1,4 @@
-# VS Code Video Player Extension
+# VS Code Omnimedia Player
 
 [![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://marketplace.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.md)
@@ -10,6 +10,7 @@ Play **MP4, WebM, MOV, MKV, and AVI** ,videos directly inside VS Code all in one
 ![BNPL Video Player Demo 1](https://sgp1.digitaloceanspaces.com/batchassets/shottr/SCR-20260401-630p.png)
 ![Video Player Demo 2](https://sgp1.digitaloceanspaces.com/batchassets/shottr/SCR-20260401-643p.png)
 
+Thanks BNPL!
 ---
 
 ## Features
@@ -85,7 +86,7 @@ scoop install ffmpeg
 Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/) or manually:
 
 ```bash
-code --install-extension video-preview-all-in-one-0.3.0.vsix
+code --install-extension omnimedia-player-0.3.0.vsix
 ```
 
 ---
@@ -257,7 +258,7 @@ Contributions are welcome!
 4. Push to the branch (`git push origin feature-name`)
 5. Submit a Pull Request
 
-Report issues or feature requests on [GitHub](https://github.com/nolanwangjq/vscode-video-preview-all-in-one/issues).
+Report issues or feature requests on [GitHub](https://github.com/nolanwangjq/vscode-omnimedia-player/issues).
 
 ---
 
