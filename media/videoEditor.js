@@ -19,10 +19,12 @@
   const fsBtn = document.getElementById("fsBtn");
   const openExternalBtn = document.getElementById("openExternal");
   const copyPathBtn = document.getElementById("copyPath");
+  const downloadBtn = document.getElementById("downloadFile");
   const ctxMenu = document.getElementById("contextMenu");
   const backBtn = document.getElementById("backBtn");
   const fwdBtn = document.getElementById("fwdBtn");
   const speedBtn = document.getElementById("speedBtn");
+  const zoomBtn = document.getElementById("zoomBtn");
 
   vscode.postMessage({ type: "ready" });
 
@@ -39,6 +41,122 @@
   let isDragging = false;
   let boosting = false;
   let boostTimer = null;
+
+  // ── Zoom & Pan ───────────────────────────────────────────
+  const ZOOM_STEPS = [1, 1.5, 2, 3];
+  let zoomStepIdx = 0;
+  let zoom = 1;
+  let panX = 0;
+  let panY = 0;
+  let isPanning = false;
+  let didPan = false;
+  let panStartClientX = 0;
+  let panStartClientY = 0;
+  let panStartOffsetX = 0;
+  let panStartOffsetY = 0;
+
+  function fmtZoom(z) {
+    const r = Math.round(z * 10) / 10;
+    return Number.isInteger(r) ? `${r}×` : `${r.toFixed(1)}×`;
+  }
+
+  function applyZoom() {
+    if (zoom <= 1) {
+      video.style.transform = '';
+      wrapper.style.cursor = '';
+    } else {
+      const maxX = (video.clientWidth * (zoom - 1)) / 2;
+      const maxY = (video.clientHeight * (zoom - 1)) / 2;
+      panX = Math.max(-maxX, Math.min(maxX, panX));
+      panY = Math.max(-maxY, Math.min(maxY, panY));
+      video.style.transform = `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`;
+      wrapper.style.cursor = isPanning ? 'grabbing' : 'grab';
+    }
+    if (zoomBtn) {
+      if (zoom <= 1) {
+        zoomBtn.innerHTML = svgZoomIn();
+        zoomBtn.title = 'Zoom In (scroll wheel · click to cycle)';
+      } else {
+        zoomBtn.textContent = fmtZoom(zoom);
+        zoomBtn.title = `${fmtZoom(zoom)} — click to reset`;
+      }
+    }
+  }
+
+  function setZoom(z) {
+    // End any active speed boost before zooming
+    if (boosting) {
+      boosting = false;
+      video.playbackRate = SPEEDS[speedIdx];
+      if (audioEl) audioEl.playbackRate = SPEEDS[speedIdx];
+    }
+    clearTimeout(boostTimer);
+    zoom = Math.max(1, Math.min(4, z));
+    if (zoom <= 1) { zoom = 1; panX = 0; panY = 0; }
+    // Snap to nearest step for cycling
+    zoomStepIdx = ZOOM_STEPS.reduce(
+      (best, s, i) => Math.abs(s - zoom) < Math.abs(ZOOM_STEPS[best] - zoom) ? i : best,
+      0
+    );
+    applyZoom();
+  }
+
+  function cycleZoom() {
+    zoomStepIdx = (zoomStepIdx + 1) % ZOOM_STEPS.length;
+    setZoom(ZOOM_STEPS[zoomStepIdx]);
+  }
+
+  zoomBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (zoom > 1) setZoom(1);
+    else cycleZoom();
+  });
+
+  // Scroll wheel to zoom
+  wrapper.addEventListener("wheel", (e) => {
+    if (e.ctrlKey) return; // let browser handle Ctrl+scroll
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.1 : -0.1;
+    setZoom(zoom + delta);
+  }, { passive: false });
+
+  // Drag to pan (pointer capture for reliable drag)
+  wrapper.addEventListener("pointerdown", (e) => {
+    if (zoom <= 1) return;
+    if (e.button !== 0) return;
+    if (progressWrap.contains(e.target)) return;
+    e.preventDefault();
+    isPanning = true;
+    didPan = false;
+    panStartClientX = e.clientX;
+    panStartClientY = e.clientY;
+    panStartOffsetX = panX;
+    panStartOffsetY = panY;
+    wrapper.setPointerCapture(e.pointerId);
+    wrapper.style.cursor = 'grabbing';
+  });
+
+  wrapper.addEventListener("pointermove", (e) => {
+    if (!isPanning) return;
+    const dx = e.clientX - panStartClientX;
+    const dy = e.clientY - panStartClientY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didPan = true;
+    panX = panStartOffsetX + dx;
+    panY = panStartOffsetY + dy;
+    applyZoom();
+  });
+
+  wrapper.addEventListener("pointerup", (e) => {
+    if (!isPanning) return;
+    isPanning = false;
+    applyZoom();
+  });
+
+  wrapper.addEventListener("pointercancel", (e) => {
+    if (!isPanning) return;
+    isPanning = false;
+    applyZoom();
+  });
 
   backBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -162,7 +280,10 @@
     playBtn.innerHTML = video.paused ? svgPlayBtn() : svgPauseBtn();
   }
 
-  video.addEventListener("click", togglePlay);
+  video.addEventListener("click", (e) => {
+    if (didPan) { didPan = false; return; }
+    togglePlay();
+  });
   video.addEventListener("dblclick", () => {});
   playBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -174,6 +295,7 @@
 
   // ── Speed boost on hold ──────────────────────────────────
   video.addEventListener("pointerdown", () => {
+    if (zoom > 1) return; // drag-to-pan takes over when zoomed
     boostTimer = setTimeout(() => {
       if (!video.paused) {
         boosting = true;
@@ -260,6 +382,9 @@
     togglePiP();
   });
 
+  // Initialise zoom button icon
+  applyZoom();
+
   // ── Fullscreen — blocked by VS Code webview sandbox ──────
   async function toggleFullscreen() {
     try {
@@ -288,6 +413,9 @@
   );
   copyPathBtn.addEventListener("click", () =>
     vscode.postMessage({ type: "command", command: "copyPath" }),
+  );
+  downloadBtn?.addEventListener("click", () =>
+    vscode.postMessage({ type: "command", command: "downloadFile" }),
   );
 
   // ── Context menu ─────────────────────────────────────────
@@ -486,5 +614,8 @@
   }
   function svgCopy() {
     return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+  }
+  function svgZoomIn() {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>`;
   }
 })();

@@ -232,6 +232,8 @@ def main() -> None:
          acodec="aac", description="30 seconds — test progress bar & seek")
     make("F05_2min",      ext=".mp4", duration=120.0,vcodec="libx264", pix_fmt="yuv420p",
          acodec="aac", description="2 minutes — test time display formatting")
+    make("F06_1h",      ext=".mp4", duration=3600.0,vcodec="libx264", pix_fmt="yuv420p",
+         acodec="aac", description="1 hour — test time display formatting")
 
     # -----------------------------------------------------------------------
     # G: Frame rate coverage

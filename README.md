@@ -1,6 +1,6 @@
 # VS Code Video Player Extension
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://marketplace.visualstudio.com/)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://marketplace.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.md)
 
 Play **MP4, WebM, MOV, MKV, and AVI** ,videos directly inside VS Code all in one — with full audio and a clean player UI.
@@ -15,16 +15,9 @@ Play **MP4, WebM, MOV, MKV, and AVI** ,videos directly inside VS Code all in one
 ## Features
 
 - **Broad codec support** — automatically detects the actual codec via ffprobe and transcodes anything Electron can't play natively (H.265, VP8, VP9, MPEG-4, MJPEG, etc.) to H.264/yuv420p on the fly.
-- **Transcode progress bar** — shows real-time transcoding progress ("Transcoding video... 42%") so you always know what's happening.
 - **Full audio playback** — automatically extracts audio via ffmpeg for formats that need it (MP4, MOV, MKV, AVI). Correctly skips the audio step for videos that have no audio track.
 - **All major formats** — MP4, WebM, MOV, MKV, AVI, M4V.
-- **Clean player UI** — auto-hide controls, progress bar with time tooltip, volume slider, resolution badge.
-- **Playback speed** — cycle through 0.5×, 0.75×, 1×, 1.25×, 1.5×, 2×.
-- **10-second skip** — forward and backward buttons.
-- **Picture-in-Picture** — float the video while you work.
-- **Open in external player** — one click to open in your system player.
-- **Copy file path** — instantly copy the full file path to clipboard.
-- **Right-click context menu** — quick access to all controls.
+- **Transcode progress bar** — shows real-time transcoding progress ("Transcoding video... 42%") so you always know what's happening. takes about 15s to transcode a 1-hour-long mp4 video. 
 
 ---
 
@@ -51,6 +44,13 @@ sudo apt install ffmpeg
 ```
 
 **Windows:** Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH.
+
+or
+
+```bash
+scoop install ffmpeg
+```
+
 
 ---
 
@@ -85,7 +85,7 @@ sudo apt install ffmpeg
 Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/) or manually:
 
 ```bash
-code --install-extension vscode-video-preview-0.1.0.vsix
+code --install-extension video-preview-all-in-one-0.3.0.vsix
 ```
 
 ---
@@ -201,6 +201,7 @@ J01 and J02 are intentionally broken files — the extension should show a grace
 | F03 | `F03_5sec.mp4` | 5 seconds | ✅ Pass |
 | F04 | `F04_30sec.mp4` | 30 seconds | ✅ Pass |
 | F05 | `F05_2min.mp4` | 2 minutes | ✅ Pass |
+| F06 | `F06_1h.mp4` | 1 hour | ✅ Pass |
 
 #### G — Frame rate coverage
 
@@ -256,7 +257,7 @@ Contributions are welcome!
 4. Push to the branch (`git push origin feature-name`)
 5. Submit a Pull Request
 
-Report issues or feature requests on [GitHub](https://github.com/ChetSocio/vscode-video-preview/issues).
+Report issues or feature requests on [GitHub](https://github.com/nolanwangjq/vscode-video-preview-all-in-one/issues).
 
 ---
 
@@ -272,14 +273,7 @@ Originally created by [BatchNepal Consultancy Pvt. Ltd.](https://batchnepal.com)
 
 ---
 
-## Changes
+## Changelog
 
-- **Fixed: codec detection** — replaced extension-name guessing with actual ffprobe detection. Only H.264 + yuv420p in `.mp4`/`.mov`/`.m4v` plays natively; all other codecs (H.265, MPEG-4, VP8/VP9, MJPEG, etc.) are automatically transcoded to H.264/yuv420p.
-- **Fixed: no-audio video handling** — videos without an audio track no longer show a spurious "Extracting audio…" bar or "Audio track unavailable" error. Audio extraction is skipped when ffprobe confirms no audio stream exists.
-- **Fixed: video not loading (all formats)** — the original implementation served files over a local HTTP server (`http://127.0.0.1`). VSCode webviews run under the `vscode-webview://` scheme; Electron treats `http://` requests as mixed content and blocks them unconditionally, regardless of CSP headers. Replaced with `webview.asWebviewUri()`, the correct VSCode API for serving local files to webviews.
-- **Fixed: transcoded output still unplayable** — the transcode command was missing `-pix_fmt yuv420p`, so videos with non-standard pixel formats (e.g. `yuv444p`) remained unplayable after transcoding.
-- **Added: real-time transcode progress bar** — replaced blocking `execFile` with `spawn` + `-progress pipe:1`, showing live progress ("Transcoding video for playback... 42%") during ffmpeg transcoding.
-- **Fixed: error routing** — transcode failures and audio-extraction failures previously shared a single error handler, causing transcode errors to be misreported as audio failures. Each path now has its own error handling.
-- **Fixed: message race condition** — if a transcoded file was already cached, the `video_src` message could be sent before the webview finished initializing, silently dropping the message. Added a `postWhenReady` queue that buffers messages until the webview signals readiness.
-- **Fixed: ffmpeg process leak** — closing the preview panel while transcoding was in progress left an orphaned ffmpeg process running. The process is now killed on panel dispose.
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 

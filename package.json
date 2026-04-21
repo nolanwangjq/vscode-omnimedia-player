@@ -2,12 +2,12 @@
   "name": "video-preview-all-in-one",
   "displayName": "Video Preview All-in-one",
   "description": "Play MP4, WebM, MOV, MKV, and AVI videos directly inside VS Code with full audio support, no file size limits, playback speed control, and Picture-in-Picture.",
-  "version": "0.2.0",
-  "publisher": "Nolan Wang",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/nolanwangjq/vscode-video-preview-pro"
   },
+  "publisher": "nolanwang",
   "icon": "images/logo.png",
   "license": "MIT",
   "bugs": {
@@ -39,6 +39,17 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Video Preview",
+      "properties": {
+        "videoPreview.externalPlayerPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "Path to an external video player executable (e.g. C:\\Program Files\\PotPlayer\\PotPlayerMini64.exe). When set, 'Open in External Player' launches this player instead of the system default. Only used in local (non-remote) VS Code sessions."
+        }
+      }
+    },
     "commands": [
       {
         "command": "videoPreview.open",

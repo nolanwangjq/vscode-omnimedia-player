@@ -146,10 +146,40 @@ export class VideoEditorProvider implements vscode.CustomReadonlyEditorProvider 
             break;
           case 'command':
             if (msg.command === 'openExternal') {
-              await vscode.env.openExternal(document.uri);
+              const playerPath = vscode.workspace.getConfiguration('videoPreview')
+                .get<string>('externalPlayerPath', '').trim();
+              // Only use custom player in local sessions — on SSH/WSL the ext-host
+              // runs on the remote machine, not the user's desktop.
+              if (playerPath && !vscode.env.remoteName) {
+                execFile(playerPath, [document.uri.fsPath], (err) => {
+                  if (err) {
+                    vscode.window.showErrorMessage(`Could not open external player: ${err.message}`);
+                  }
+                });
+              } else {
+                await vscode.env.openExternal(document.uri);
+              }
             } else if (msg.command === 'copyPath') {
               await vscode.env.clipboard.writeText(document.uri.fsPath);
               vscode.window.showInformationMessage('File path copied.');
+            } else if (msg.command === 'downloadFile') {
+              const defaultUri = vscode.Uri.file(
+                path.join(os.homedir(), 'Downloads', path.basename(document.uri.fsPath))
+              );
+              const ext = path.extname(document.uri.fsPath).slice(1).toLowerCase();
+              const targetUri = await vscode.window.showSaveDialog({
+                defaultUri,
+                filters: { 'Video': ['mp4', 'webm', 'mov', 'mkv', 'avi', 'm4v', ext].filter((v, i, a) => v && a.indexOf(v) === i) },
+                saveLabel: 'Save Copy',
+              });
+              if (targetUri) {
+                try {
+                  await vscode.workspace.fs.copy(document.uri, targetUri, { overwrite: true });
+                  vscode.window.showInformationMessage(`Saved: ${targetUri.fsPath}`);
+                } catch (e: any) {
+                  vscode.window.showErrorMessage(`Save failed: ${e?.message ?? e}`);
+                }
+              }
             }
             break;
           case 'position':
@@ -380,7 +410,7 @@ export class VideoEditorProvider implements vscode.CustomReadonlyEditorProvider 
       : willExtractAudio
         ? `<div class="transcode-bar" id="transcodeBar"><div class="transcode-spinner"></div><span>Extracting audio for playback...</span></div>`
         : showNoFfmpegWarn
-          ? `<div class="transcode-bar warn" id="transcodeBar"><span>⚠ Install ffmpeg for audio support: <code>brew install ffmpeg</code></span></div>`
+          ? `<div class="transcode-bar warn" id="transcodeBar"><span>⚠ Install ffmpeg for audio support: <code> install ffmpeg</code></span></div>`
           : '';
 
     return /* html */`
@@ -444,6 +474,7 @@ export class VideoEditorProvider implements vscode.CustomReadonlyEditorProvider 
       <button class="ctrl speed-btn" id="speedBtn" title="Playback Speed">1×</button>
         <span class="res-badge" id="resBadge"></span>
         <button class="ctrl" id="pipBtn" title="Picture-in-Picture (P)"></button>
+        <button class="ctrl zoom-btn" id="zoomBtn" title="Zoom (scroll wheel · click to cycle)"></button>
         <button class="ctrl" id="fsBtn" title="Fullscreen (F)"></button>
       </div>
     </div>
@@ -456,6 +487,10 @@ export class VideoEditorProvider implements vscode.CustomReadonlyEditorProvider 
       <button class="action-btn" id="copyPath">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy File Path
+      </button>
+      <button class="action-btn" id="downloadFile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Save Video
       </button>
     </div>
 
